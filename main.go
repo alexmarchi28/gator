@@ -36,7 +36,17 @@ func (c *commands) register(name string, f func(*state, command) error) {
 }
 
 func handlerLogin(s *state, cmd command) error {
+	cfg, configCreated, err := config.ReadOrCreate()
+	if err != nil {
+		return err
+	}
+	s.cfg = &cfg
+
 	if len(cmd.args) == 0 {
+		if configCreated {
+			fmt.Println("Config file has been created")
+			return nil
+		}
 		return fmt.Errorf("username is required")
 	}
 
@@ -54,10 +64,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg := config.Read()
-	appState := state{
-		cfg: &cfg,
-	}
+	appState := state{}
 
 	cmds := commands{
 		handlers: map[string]func(*state, command) error{},
